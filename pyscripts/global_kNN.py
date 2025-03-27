@@ -45,7 +45,7 @@ for run_index, features in enumerate(snakemake.input["features"]):
         top1, top2, total = 0.0, 0.0, 0
         train_features = train_features.t()
         num_test_images, num_chunks = test_labels.shape[0], 100
-        imgs_per_chunk = num_test_images // num_chunks
+        imgs_per_chunk = max(num_test_images // num_chunks, 1)
         retrieval_one_hot = torch.zeros(k, num_classes).to(train_features.device)
         for idx in range(0, num_test_images, imgs_per_chunk):
             # get the features for test images

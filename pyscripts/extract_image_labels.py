@@ -15,6 +15,7 @@ from torch import nn
 import torch.distributed as dist
 import re
 import json
+from PIL import Image
 
 
 def extract_and_save_feature_pipeline(args):
@@ -37,7 +38,10 @@ def extract_and_save_feature_pipeline(args):
 
         def load_image(self, idx, args):
             path, target = self.samples[idx]
-            image = imread(path)
+            if path.endswith(".tif") or path.endswith(".tiff"):
+                image = imread(path)
+            else:
+                image = np.array(Image.open(path))
             image = image[:, :, selected_channels]
             image = image.astype(float)
             if args.center_crop:
@@ -249,6 +253,7 @@ if __name__ == '__main__':
     #computation settings
     parser.add_argument('--name_of_run', default='/recent_run', type=str)
     parser.add_argument('--batch_size_per_gpu', default=30, type=int, help='Per-GPU batch-size')
+    parser.add_argument('--local-rank', default=0, type=int, help="""torchrun stuff""")
     parser.add_argument('--pretrained_weights', default='', type=str, help="Path to pretrained weights to evaluate.")
     parser.add_argument('--use_cuda', default=True, type=utils.bool_flag,
         help="Should we store the features on GPU? We recommend setting this to False if you encounter OOM")

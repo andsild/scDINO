@@ -4,29 +4,34 @@ import utils
 from tifffile import imread
 import numpy
 import torchvision.transforms as transforms
+from PIL import Image
+
 
 class ReturnIndexDataset(datasets.ImageFolder):
         def __getitem__(self, idx):
             path, target = self.samples[idx]
-            image= imread(path)
-            image=image.astype(float)
-            if snakemake.params['center_crop'] != 0:
-                image = torch.from_numpy(image).permute(2, 0, 1)
-                transform = transforms.CenterCrop(snakemake.params['center_crop'])
-                tensor = transform(image)
-                image = image.permute(1, 2, 0)
-                image = image.numpy()
-            image = utils.normalize_numpy_0_to_1(image)
-            if utils.check_nan(image):
-                print("nan in image: ", path)
-                return None
-            else:
-                tensor = torch.from_numpy(image).permute(2, 0, 1)
-                if torch.isnan(tensor).any():
-                    print("nan in tensor: ", path)
-                    return None
-                else:
-                    return tensor, idx
+            image = torch.from_numpy(numpy.array(Image.open(path))).permute(2, 0, 1)
+            return image, idx
+
+            # image= imread(path)
+            # image=image.astype(float)
+            # if snakemake.params['center_crop'] != 0:
+            #     image = torch.from_numpy(image).permute(2, 0, 1)
+            #     transform = transforms.CenterCrop(snakemake.params['center_crop'])
+            #     tensor = transform(image)
+            #     image = image.permute(1, 2, 0)
+            #     image = image.numpy()
+            # image = utils.normalize_numpy_0_to_1(image)
+            # if utils.check_nan(image):
+            #     print("nan in image: ", path)
+            #     return None
+            # else:
+            #     tensor = torch.from_numpy(image).permute(2, 0, 1)
+            #     if torch.isnan(tensor).any():
+            #         print("nan in tensor: ", path)
+            #         return None
+            #     else:
+            #         return tensor, idx
 
 def collate_fn(batch):
     batch = list(filter(lambda x: x is not None, batch))
@@ -81,7 +86,7 @@ def batch_mean_and_sd(loader):
         snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
         cnt += nb_pixels
 
-    mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
+    mean, std = fst_moment, torch.sqrt((snd_moment - fst_moment) ** 2)
     return mean,std
   
 mean, std = batch_mean_and_sd(image_data_loader)

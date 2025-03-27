@@ -243,7 +243,7 @@ def gamma_adjust_wo_nan(tensor,gamma, eps=1e-8, a=1):
 
 def get_pretrained_weights_in_chans(pretrained_weights, checkpoint_key="teacher"):
      if os.path.isfile(pretrained_weights):
-        state_dict = torch.load(pretrained_weights, map_location="cpu")
+        state_dict = torch.load(pretrained_weights, map_location="cpu", weights_only=False)
         if checkpoint_key is not None and checkpoint_key in state_dict:
             print(f"Take key {checkpoint_key} in provided checkpoint dict")
             state_dict_check = state_dict[checkpoint_key]
@@ -262,7 +262,7 @@ def get_pretrained_weights_in_chans(pretrained_weights, checkpoint_key="teacher"
 
 def load_pretrained_weights(model, pretrained_weights, checkpoint_key, model_name, patch_size):
     if os.path.isfile(pretrained_weights):
-        state_dict = torch.load(pretrained_weights, map_location="cpu")
+        state_dict = torch.load(pretrained_weights, map_location="cpu", weights_only=False)
         if checkpoint_key is not None and checkpoint_key in state_dict:
             print(f"Take key {checkpoint_key} in provided checkpoint dict")
             state_dict = state_dict[checkpoint_key]
@@ -346,7 +346,7 @@ def restart_from_checkpoint(ckp_path, run_variables=None, **kwargs):
     print("Found checkpoint at {}".format(ckp_path))
 
     # open checkpoint file
-    checkpoint = torch.load(ckp_path, map_location="cpu")
+    checkpoint = torch.load(ckp_path, map_location="cpu", weigths_only=False)
 
     # key is what to look for in the checkpoint file
     # value is the object to load

@@ -1,51 +1,51 @@
 meta:
-  name_of_run: "name_of_run"
-  output_dir: "/outputdir"
-  dataset_dir: "/datasetdir"
+  name_of_run: "my_test_run"
+  output_dir: "out"
+  dataset_dir: "example_data"
   folder_depth_for_labels: 0 # 0 is the folder where the images are, 1 is the folder above, etc.
   train_datasetsplit_fraction: 0.8
   seed: 40
-  images_are_RGB: False
-  channel_dict: { 0: "aTub", 1: "BF", 2: "DAPI", 3: "Oct4", 4: "PE" } #do not use underscore or slash in channel name
-  selected_channel_combination_per_run: ["01234", "0", "1", "2", "3", "4"] #01234 is all 5 channels, 0 is only APC, 1 is only BF, etc.
+  images_are_RGB: 0
+  channel_dict: { 0: "red", 1: "green", 2: "blue" } #do not use underscore or slash in channel name
+  selected_channel_combination_per_run: ["012", "0", "1", "2"] #01234 is all 5 channels, 0 is only APC, 1 is only BF, etc.
   center_crop: 0 #0 is no center crop
 
 train_scDINO:
-  dino_vit_name: "name_of_model"
+  dino_vit_name: "dino_vit_name"
   fraction_for_mean_std_calc: 0.2
   epochs: 10
   saveckp_freq: 2
-  num_gpus: 2
-  batch_size_per_gpu: 30
+  num_gpus: 1
+  batch_size_per_gpu: 32
   num_workers: 8
   dist_url: "env://"
   hyperparameters:
     arch: "vit_small"
-    patch_size: 16
-    norm_last_layer: True
-    momentum_teacher: 0.996
-    use_bn_in_head: False
-    warmup_teacher_temp: 0.04
-    teacher_temp: 0.04
-    warmup_teacher_temp_epochs: 0
-    use_fp16: True
-    weight_decay: 0.04
-    weight_decay_end: 0.4
     clip_grad: 3
-    freeze_last_layer: 1
-    lr: 0.0005
-    warmup_epochs: 5
-    min_lr: 0.000001
-    optimizer: "adamw"
     drop_path_rate: 0.1
+    freeze_last_layer: 1
     global_crops_scale: !!python/tuple [0.14, 1.0]
     local_crops_number: 8
     local_crops_scale: !!python/tuple [0.05, 0.14]
+    lr: 0.0005
+    min_lr: 0.000001
+    momentum_teacher: 0.996
+    norm_last_layer: True
+    optimizer: "adamw"
+    patch_size: 16
+    teacher_temp: 0.04
+    use_bn_in_head: False
+    use_fp16: True
+    warmup_epochs: 5
+    warmup_teacher_temp: 0.04
+    warmup_teacher_temp_epochs: 0
+    weight_decay: 0.04
+    weight_decay_end: 0.4
 
 downstream_analyses:
   compute_cls_features:
     normalize: True
-    num_gpus: 2
+    num_gpus: 1
     batch_size_per_gpu: 24
     num_workers: 8
     checkpoint_key: teacher

@@ -39,6 +39,7 @@ def get_args_parser():
                 + torchvision_archs,
         help="""Name of architecture to train. For quick experiments with ViTs,
         we recommend using vit_tiny or vit_small.""")
+    parser.add_argument('--local-rank', default=0, type=int, help="""torchrun stuff""")
     parser.add_argument('--patch_size', default=16, type=int, help="""Size in pixels
         of input square patches - default 16 (for 16x16 patches). Using smaller
         values leads to better performance but requires more memory. Applies only
@@ -172,7 +173,10 @@ def train_dino(args, save_dir):
         class Multichannel_dataset(datasets.ImageFolder):
                 def __getitem__(self, idx):
                     path, target = self.samples[idx]
-                    image_np= imread(path)
+                    if path.endswith(".tif") or path.endswith(".tiff"):
+                        image_np= imread(path)
+                    else:
+                        image_np = numpy.array(Image.open(path))
                     image_np=image_np.astype(float)
                     image_np = image_np[:,:,selected_channels]
                     if args.center_crop:

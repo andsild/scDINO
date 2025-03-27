@@ -13,6 +13,7 @@ import sys
 import cv2
 import random
 import colorsys
+from PIL import Image
 import skimage.io
 from skimage.measure import find_contours
 import matplotlib.pyplot as plt
@@ -155,7 +156,9 @@ if args.read_model_arch_dynamically:
 # build model
 device = torch.device("cpu")
 selected_channels = list(map(int, args.selected_channels))
+print("Loading %s " % (args.pretrained_weights))
 num_in_chans_pretrained = utils.get_pretrained_weights_in_chans(args.pretrained_weights)
+print("Load complete")
 model = vits.__dict__[args.arch](patch_size=args.patch_size, num_classes=0, in_chans=num_in_chans_pretrained)
 for p in model.parameters():
     p.requires_grad = False
@@ -163,7 +166,7 @@ model.eval()
 model.to(device)
 print('device:', device)
 if os.path.isfile(args.pretrained_weights):
-    state_dict = torch.load(args.pretrained_weights, map_location="cpu")
+    state_dict = torch.load(args.pretrained_weights, map_location="cpu", weights_only=False)
     if args.checkpoint_key is not None and args.checkpoint_key in state_dict:
         print(f"Take key {args.checkpoint_key} in provided checkpoint dict")
         state_dict = state_dict[args.checkpoint_key]
@@ -314,7 +317,11 @@ for class_name in classes:
             os.mkdir(random_cell_dir)
         except:
             pass
-        image_raw = imread(image_path)
+        if image_path.endswith(".tif") or image_path.endswith(".tiff"):
+            image_raw = imread(image_path)
+        else:
+            image_raw = np.array(Image.open(image_path))
+
         image_raw=image_raw.astype(float)
         image = image_raw[:,:,selected_channels]
         img = prepare_img(image, args)
