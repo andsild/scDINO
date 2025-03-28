@@ -7,7 +7,7 @@ import ast
 import torch
 from torchvision import transforms, datasets
 import os
-from catalyst.data import DistributedSamplerWrapper
+from torch.utils.data.distributed import DistributedSampler
 import sys
 import vision_transformer as vits
 from torchvision import models as torchvision_models
@@ -92,7 +92,15 @@ def extract_and_save_feature_pipeline(args):
             weights_per_class = ast.literal_eval(args.class_weights)
             weights_per_sample = [weights_per_class[dataset_total.samples[i][1]] for i in range(len(dataset_total.samples))]
             weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights_per_sample, args.num_samples, replacement=False)
-            sampler = DistributedSamplerWrapper(weighted_sampler)
+            # sampler = DistributedSamplerWrapper(weighted_sampler)
+
+            sampler = DistributedSampler(
+                    dataset_total,
+                    num_replicas=dist.get_world_size(),
+                    rank=dist.get_rank(),
+                    shuffle=True,  # or False depending on your setup
+                    seed=args.seed
+                )
     
     elif args.scDINO_full_pipeline:
         validation_split = float(1-args.train_datasetsplit_fraction)
@@ -104,8 +112,19 @@ def extract_and_save_feature_pipeline(args):
             np.random.seed(args.seed)
             np.random.shuffle(indices)
         train_indices, val_indices = indices[split:], indices[:split]
-        val_sampler = torch.utils.data.SubsetRandomSampler(val_indices)
-        sampler = DistributedSamplerWrapper(val_sampler)
+        #val_sampler = torch.utils.data.SubsetRandomSampler(val_indices)
+        val_subset = torch.utils.data.Subset(dataset_total, val_indices)
+        val_sampler = DistributedSampler(
+                val_subset,
+                num_replicas=dist.get_world_size(),
+                rank=dist.get_rank(),
+                shuffle=True,  # or False depending on your setup
+                seed=args.seed
+            )
+    
+
+        # sampler = DistributedSamplerWrapper(val_sampler)
+        sampler = val_sampler
         num_samples = len(val_indices)
     
     elif args.test_datasetsplit_fraction!=1:

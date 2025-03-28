@@ -63,6 +63,7 @@ image_data_loader = torch.utils.data.DataLoader(
     dataset_total,
     sampler=train_sampler,
     batch_size=int(len(train_indices)/10),
+    #batch_size=32,
     num_workers=0, 
     collate_fn=collate_fn, 
     drop_last=True)

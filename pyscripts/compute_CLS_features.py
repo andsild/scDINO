@@ -7,10 +7,11 @@ import ast
 import torch
 from torchvision import transforms, datasets
 import os
-from catalyst.data import DistributedSamplerWrapper
+# from catalyst.data import DistributedSamplerWrapper
 import sys
 import vision_transformer as vits
 from torchvision import models as torchvision_models
+from torch.utils.data.distributed import DistributedSampler
 from torch import nn
 import torch.distributed as dist
 import re
@@ -104,8 +105,16 @@ def extract_and_save_feature_pipeline(args):
             np.random.seed(args.seed)
             np.random.shuffle(indices)
         train_indices, val_indices = indices[split:], indices[:split]
-        val_sampler = torch.utils.data.SubsetRandomSampler(val_indices)
-        sampler = DistributedSamplerWrapper(val_sampler)
+        # val_sampler = torch.utils.data.SubsetRandomSampler(val_indices)
+        # sampler = DistributedSamplerWrapper(val_sampler)
+        val_subset = torch.utils.data.Subset(dataset_total, val_indices)
+        sampler = DistributedSampler(
+                val_subset,
+                num_replicas=dist.get_world_size(),
+                rank=dist.get_rank(),
+                shuffle=True,  # or False depending on your setup
+                seed=args.seed
+            )
         num_samples = len(val_indices)
     
     elif args.test_datasetsplit_fraction!=1:

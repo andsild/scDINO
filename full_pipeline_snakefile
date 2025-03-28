@@ -2,6 +2,7 @@ import os
 import re
 import ast
 import yaml
+import json
 
 #### FUNCTIONS ####
 def get_channel_name_combi(channel_combi_num, channel_dict):

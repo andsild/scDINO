@@ -24,7 +24,7 @@ import numpy
 from PIL import Image
 import torchvision
 import ast
-from catalyst.data import DistributedSamplerWrapper
+from torch.utils.data.distributed import DistributedSampler
 
 torchvision_archs = sorted(name for name in torchvision_models.__dict__
     if name.islower() and not name.startswith("__")
@@ -219,7 +219,15 @@ def train_dino(args, save_dir):
 
     # Creating data samplers and loaders:
     train_sampler = torch.utils.data.SubsetRandomSampler(train_indices)
-    train_sampler_wrapped = DistributedSamplerWrapper(train_sampler)
+    # train_sampler_wrapped = DistributedSamplerWrapper(train_sampler)
+    train_sampler_wrapped = DistributedSampler(
+            dataset_total,
+            num_replicas=dist.get_world_size(),
+            rank=dist.get_rank(),
+            shuffle=True,  # or False depending on your setup
+            seed=args.seed
+        )
+
 
     data_loader = torch.utils.data.DataLoader(
         dataset_total,

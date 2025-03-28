@@ -1,7 +1,6 @@
 Pillow
-PyYAML
 PuLP==2.3
-snakemake==7.20.0
+PyYAML
 catalyst
 imageio
 matplotlib
@@ -12,6 +11,7 @@ pandas
 scikit_image
 scikit_learn
 seaborn
+snakemake==7.20.0
 tifffile
 topo
 topometry

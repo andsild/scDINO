@@ -1,3 +1,4 @@
+.snakemake/*
 out/
 example_data/
 

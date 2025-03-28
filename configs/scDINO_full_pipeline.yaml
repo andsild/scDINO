@@ -1,7 +1,9 @@
 meta:
-  name_of_run: "my_test_run"
-  output_dir: "out"
-  dataset_dir: "example_data"
+  name_of_run: "binary_NGS_EBO"
+  output_dir: "/data/aml/scdino"
+  # dataset_dir: "/data/aml/emory_extracted_448_cellonly/"
+  # dataset_dir: "example_data"
+  dataset_dir: "/data/aml/test_binary_AML_helm/"
   folder_depth_for_labels: 0 # 0 is the folder where the images are, 1 is the folder above, etc.
   train_datasetsplit_fraction: 0.8
   seed: 40
@@ -51,6 +53,7 @@ downstream_analyses:
     checkpoint_key: teacher
     resize: True
     resize_length: 224 #only used if resize is True
+    use_weighted_sampler: False # if False, valdataset is used defined in meta
   attention_visualisation:
     num_images_per_class: 1
     resize_attention_image: True

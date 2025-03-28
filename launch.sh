@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
 
-snakemake -s full_pipeline_snakefile all \
-  --configfile="configs/scDINO_full_pipeline.yaml" \
-  --keep-incomplete \
-  --drop-metadata \
-  --cores 1 \
-  --jobs 1 \
-  -k \
-  --latency-wait 45 \
+set -xe
+docker run --rm --name scdino --gpus  'device=1' --shm-size=2g --ulimit core=0 -v ${PWD}:/code -v /data/aml/:/data/aml -it pesktux/scdino:latest
