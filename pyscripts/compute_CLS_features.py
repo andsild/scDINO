@@ -133,7 +133,7 @@ def extract_and_save_feature_pipeline(args):
 
     else:
         print("Loading all images of the dataset")
-        sampler = torch.utils.data.DistributedSampler(dataset_total, shuffle=False)
+        sampler = torch.utils.data.DistributedSampler(dataset_total, shuffle=True)
         num_samples = len(dataset_total)
 
     data_loader = torch.utils.data.DataLoader(

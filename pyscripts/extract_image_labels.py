@@ -114,17 +114,17 @@ def extract_and_save_feature_pipeline(args):
         train_indices, val_indices = indices[split:], indices[:split]
         #val_sampler = torch.utils.data.SubsetRandomSampler(val_indices)
         val_subset = torch.utils.data.Subset(dataset_total, val_indices)
-        val_sampler = DistributedSampler(
-                val_subset,
-                num_replicas=dist.get_world_size(),
-                rank=dist.get_rank(),
-                shuffle=True,  # or False depending on your setup
-                seed=args.seed
-            )
+        # val_sampler = DistributedSampler(
+        #         val_subset,
+        #         num_replicas=dist.get_world_size(),
+        #         rank=dist.get_rank(),
+        #         shuffle=True,  # or False depending on your setup
+        #         seed=args.seed
+        #     )
     
 
         # sampler = DistributedSamplerWrapper(val_sampler)
-        sampler = val_sampler
+        # sampler = val_sampler
         num_samples = len(val_indices)
     
     elif args.test_datasetsplit_fraction!=1:
@@ -143,12 +143,12 @@ def extract_and_save_feature_pipeline(args):
 
     else:
         print("Loading all images of the dataset")
-        sampler = torch.utils.data.DistributedSampler(dataset_total, shuffle=False)
+        sampler = torch.utils.data.DistributedSampler(dataset_total, shuffle=True)
         num_samples = len(dataset_total)
 
     data_loader = torch.utils.data.DataLoader(
-        dataset_total,
-        sampler=sampler,
+        val_subset,
+        # sampler=sampler,
         batch_size=args.batch_size_per_gpu,
         num_workers=args.num_workers,
         pin_memory=True,
@@ -206,6 +206,8 @@ def extract_and_save_feature_pipeline(args):
             model = build_weight_emb(embedding_seq, model)
 
     # ============ extract features ... ============
+    # TODO: all indices returned in the dataloader are from 0 to length of the val_indices
+
     print("Extracting features for train set...")
     features, index_all = extract_features(model, data_loader, args.use_cuda)
 
@@ -213,7 +215,7 @@ def extract_and_save_feature_pipeline(args):
         features = nn.functional.normalize(features, dim=1, p=2)
     
     classes = [s for s in dataset_total.classes]
-    labels = [classes[dataset_total.targets[i]] for i in index_all]
+    labels = [classes[dataset_total.targets[i]] for i in index_all] # TODO: this index is wrong, np.max = length of dataset
     image_names= [dataset_total.samples[i][0] for i in index_all]
 
     return features, labels, image_names
